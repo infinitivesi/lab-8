@@ -1,0 +1,6 @@
+pytest
+pytest-cov
+requests
+flask
+flask-cors
+flasgger

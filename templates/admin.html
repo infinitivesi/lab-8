@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block title %}Адмін-панель{% endblock %}
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Адмін-панель</h1>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Товари</h2>
+
+        <div class="mb-4 max-w-md">
+            <form action="{{ url_for('admin.add_product_route') }}" method="post" class="space-y-2 bg-gray-50 p-4 rounded">
+                <div>
+                    <input name="name" placeholder="Назва товару" required class="w-full rounded border-gray-300 px-2 py-1" />
+                </div>
+                <div>
+                    <input name="price" type="number" step="0.01" placeholder="Ціна (грн)" required class="w-full rounded border-gray-300 px-2 py-1" />
+                </div>
+                <div>
+                    <input name="image" placeholder="URL зображення" class="w-full rounded border-gray-300 px-2 py-1" />
+                </div>
+                <div>
+                    <button type="submit" class="py-1 px-3 bg-green-600 text-white rounded">Додати товар</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Назва</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ціна</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Зображення</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for product in products %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-4 whitespace-nowrap">{{ product['id'] }}</td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <form action="{{ url_for('admin.edit_product_route', product_id=product['id']) }}" method="post" class="inline">
+                                <input name="name" value="{{ product['name'] }}" class="rounded border-gray-200 px-2 py-1 product-name" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                                <input name="price" type="number" step="0.01" value="{{ product['price'] }}" class="rounded border-gray-200 px-2 py-1 w-20 product-price" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                                <input name="image" value="{{ product['image'] }}" class="rounded border-gray-200 px-2 py-1 w-32 product-image" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
+                                <button type="submit" class="text-indigo-600 hover:text-indigo-900 mr-3">Оновити</button>
+                            </form>
+                            <form action="{{ url_for('admin.delete_product_route', product_id=product['id']) }}" method="post" class="inline">
+                                <button type="submit" class="text-red-600 hover:text-red-900">Видалити</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Замовлення</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сума</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for order in orders %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-4 px-4 whitespace-nowrap">{{ order['id'] }}</td>
+                        <td class="py-4 px-4 whitespace-nowrap">{{ order['email'] }}</td>
+                        <td class="py-4 px-4 whitespace-nowrap">{{ order['total_price'] }} грн</td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <form action="{{ url_for('admin.update_order', order_id=order['id']) }}" method="post" class="flex items-center space-x-2">
+                                <select name="status" class="rounded border-gray-300 text-sm py-1 px-2">
+                                    {% set s = order['status'] %}
+                                    <option value="Нове" {% if s == 'Нове' %}selected{% endif %}>Нове</option>
+                                    <option value="В обробці" {% if s == 'В обробці' %}selected{% endif %}>В обробці</option>
+                                    <option value="Відправлено" {% if s == 'Відправлено' %}selected{% endif %}>Відправлено</option>
+                                    <option value="Доставлено" {% if s == 'Доставлено' %}selected{% endif %}>Доставлено</option>
+                                    <option value="Скасовано" {% if s == 'Скасовано' %}selected{% endif %}>Скасовано</option>
+                                </select>
+                                <button type="submit" class="text-indigo-600 hover:text-indigo-900 text-sm">Оновити</button>
+                            </form>
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap">{{ order['date'] }}</td>
+                        <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{{ url_for('admin.order_details', order_id=order['id']) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Деталі</a>
+                            <form action="{{ url_for('admin.delete_order_route', order_id=order['id']) }}" method="post" class="inline">
+                                <button type="submit" class="text-red-600 hover:text-red-900">Видалити</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Повідомлення розробнику</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ім'я</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Повідомлення</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200" id="developerFeedback">
+                    <!-- populated by JS -->
+                    <tr><td colspan="5" class="text-center text-gray-500 py-4">Завантаження...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Загальні повідомлення зворотного зв'язку</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ім'я</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Повідомлення</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200" id="generalFeedback">
+                    <!-- populated by JS -->
+                    <tr><td colspan="5" class="text-center text-gray-500 py-4">Завантаження...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    async function loadFeedback() {
+        const apiBase = '/api/v1/feedback/type';
+        const devTable = document.getElementById('developerFeedback');
+        const genTable = document.getElementById('generalFeedback');
+        
+        async function renderType(type, container) {
+            try {
+                const r = await fetch(`${apiBase}/${type}`);
+                const json = await r.json();
+                const items = (json.data && Array.isArray(json.data)) ? json.data : [];
+                if (!items.length) {
+                    container.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Немає повідомлень</td></tr>';
+                    return;
+                }
+                container.innerHTML = '';
+                items.forEach(it => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    const deleteUrl = `/admin/delete_feedback/${it.id}`;
+                    row.innerHTML = `
+                        <td class="py-4 px-4 whitespace-nowrap">${it.id}</td>
+                        <td class="py-4 px-4 whitespace-nowrap">${it.name || ''}</td>
+                        <td class="py-4 px-4 whitespace-nowrap">${it.email || ''}</td>
+                        <td class="py-4 px-4"><div class="text-sm text-gray-900 truncate max-w-xs">${it.message || ''}</div></td>
+                        <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
+                            <form action="${deleteUrl}" method="post" class="inline">
+                                <button type="submit" class="text-red-600 hover:text-red-900">Видалити</button>
+                            </form>
+                        </td>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (e) {
+                container.innerHTML = `<tr><td colspan="5" class="text-center text-red-600 py-4">Помилка завантаження</td></tr>`;
+                console.error(e);
+            }
+        }
+        
+        await renderType('developer', devTable);
+        await renderType('general', genTable);
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadFeedback);
+    </script>
+
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Клієнти</h2>
+
+        <div class="mb-4 max-w-md">
+            <form action="{{ url_for('admin.add_client_route') }}" method="post" class="space-y-2 bg-gray-50 p-4 rounded">
+                <div class="flex space-x-2">
+                    <input name="name" placeholder="Ім'я" required class="w-1/3 rounded border-gray-300 px-2 py-1" />
+                    <input name="email" placeholder="Email" class="w-1/3 rounded border-gray-300 px-2 py-1" />
+                    <input name="phone" placeholder="Телефон" class="w-1/3 rounded border-gray-300 px-2 py-1" />
+                </div>
+                <div>
+                    <input name="address" placeholder="Адреса" class="w-full rounded border-gray-300 px-2 py-1" />
+                </div>
+                <div class="flex items-center space-x-2 mt-2">
+                    <input type="checkbox" id="has_courses" name="has_courses" value="1" class="h-4 w-4" />
+                    <label for="has_courses" class="text-sm">Замовив(ла) курси</label>
+                </div>
+                <div>
+                    <button type="submit" class="py-1 px-3 bg-green-600 text-white rounded">Додати клієнта</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ім'я</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Телефон</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Адреса</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for client in clients %}
+                    <tr class="hover:bg-gray-50" data-client-id="{{ client['id'] }}">
+                        <td class="py-4 px-4 whitespace-nowrap">{{ client['id'] }}</td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <input name="name" value="{{ client['name'] }}" class="rounded border-gray-200 px-2 py-1 client-name" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <input name="email" value="{{ client['email'] }}" class="rounded border-gray-200 px-2 py-1 client-email" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <input name="phone" value="{{ client['phone'] }}" class="rounded border-gray-200 px-2 py-1 client-phone" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <input name="address" value="{{ client['address'] }}" class="rounded border-gray-200 px-2 py-1 w-full client-address" />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap text-center">
+                            <input type="checkbox" class="client-has-courses" data-client-id="{{ client['id'] }}" {% if client['has_courses'] %}checked{% endif %} />
+                        </td>
+                        <td class="py-4 px-4 whitespace-nowrap text-sm font-medium">
+                            <button type="button" data-client-id="{{ client['id'] }}" class="client-update-btn text-indigo-600 hover:text-indigo-900 mr-3">Оновити</button>
+                            <form action="{{ url_for('admin.delete_client_route', client_id=client['id']) }}" method="post" class="inline">
+                                <button type="submit" class="text-red-600 hover:text-red-900">Видалити</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.client-update-btn').forEach(function(btn) {
+        btn.addEventListener('click', async function() {
+            const clientId = this.dataset.clientId;
+            const row = this.closest('tr');
+            const name = row.querySelector('.client-name').value;
+            const email = row.querySelector('.client-email').value;
+            const phone = row.querySelector('.client-phone').value;
+            const address = row.querySelector('.client-address').value;
+
+            const params = new URLSearchParams();
+            params.append('name', name);
+            params.append('email', email);
+            params.append('phone', phone);
+            params.append('address', address);
+            const hasCoursesEl = row.querySelector('.client-has-courses');
+            const hasVal = hasCoursesEl && hasCoursesEl.checked ? '1' : '0';
+            params.append('has_courses', hasVal);
+
+            // Create a plain POST form and submit it so server redirects/flashes work
+            try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/clients/edit/${clientId}`;
+                // add fields
+                const fields = {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    address: address,
+                    has_courses: hasVal
+                };
+                for (const k in fields) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = k;
+                    input.value = fields[k];
+                    form.appendChild(input);
+                }
+                document.body.appendChild(form);
+                form.submit();
+            } catch (err) {
+                console.error(err);
+                alert('Помилка оновлення');
+            }
+        });
+    });
+});
+</script>

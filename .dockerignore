@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+*.sqlite
+.env
+tests/
+.github/
+DOCKER.md
+MOBILE.md
+run-android.ps1
+*.md
+backups/
+nginx/
+docker-compose.prod.yml
+docker-compose.override.yml

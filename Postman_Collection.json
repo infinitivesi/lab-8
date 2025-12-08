@@ -1,0 +1,407 @@
+{
+  "info": {
+    "_postman_id": "flask-shop-api-collection",
+    "name": "Flask Shop API v1",
+    "description": "Comprehensive API testing collection for Flask Shop application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Перевірити, чи працює API"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "GET all products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Отримати всі товари"
+          },
+          "response": []
+        },
+        {
+          "name": "GET products with search filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/products?q=книга",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "products"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "книга"
+                }
+              ]
+            },
+            "description": "Пошук товарів за назвою"
+          },
+          "response": []
+        },
+        {
+          "name": "GET products with price filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/products?min_price=100&max_price=500",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "products"],
+              "query": [
+                {
+                  "key": "min_price",
+                  "value": "100"
+                },
+                {
+                  "key": "max_price",
+                  "value": "500"
+                }
+              ]
+            },
+            "description": "Фільтрація товарів за ціною"
+          },
+          "response": []
+        },
+        {
+          "name": "GET products with image",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/products?has_image=true",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "products"],
+              "query": [
+                {
+                  "key": "has_image",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Товари тільки з фото"
+          },
+          "response": []
+        },
+        {
+          "name": "GET product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/products/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "products", "1"]
+            },
+            "description": "Отримати один товар за ID"
+          },
+          "response": []
+        },
+        {
+          "name": "GET product by ID (not found)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/products/9999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "products", "9999"]
+            },
+            "description": "Тест помилки - товар не існує"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "GET all orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Отримати всі замовлення"
+          },
+          "response": []
+        },
+        {
+          "name": "GET orders by email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders?email=user@example.com",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "user@example.com"
+                }
+              ]
+            },
+            "description": "Замовлення конкретного користувача"
+          },
+          "response": []
+        },
+        {
+          "name": "GET order by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders", "1"]
+            },
+            "description": "Деталі замовлення з товарами"
+          },
+          "response": []
+        },
+        {
+          "name": "POST create order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"address\": \"вул. Тестова, 1\",\n  \"phone\": \"+380123456789\",\n  \"cart\": {\n    \"1\": {\n      \"id\": 1,\n      \"name\": \"Тестовий товар\",\n      \"price\": 100,\n      \"quantity\": 2\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Створити нове замовлення"
+          },
+          "response": []
+        },
+        {
+          "name": "POST create order (missing email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"вул. Тестова, 1\",\n  \"cart\": {}\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Тест помилки валідації - відсутній email"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT update order status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Обробляється\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders", "1"]
+            },
+            "description": "Оновити статус замовлення"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/orders/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "orders", "1"]
+            },
+            "description": "Видалити замовлення"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "GET all feedback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/feedback",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "feedback"]
+            },
+            "description": "Отримати всі відгуки"
+          },
+          "response": []
+        },
+        {
+          "name": "POST create feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Іван Петренко\",\n  \"email\": \"ivan@example.com\",\n  \"message\": \"Чудовий товар! Дуже задоволений\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/feedback",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "feedback"]
+            },
+            "description": "Створити новий відгук"
+          },
+          "response": []
+        },
+        {
+          "name": "POST create feedback (invalid JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "invalid json"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/feedback",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "feedback"]
+            },
+            "description": "Тест помилки - невірний Content-Type"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE feedback",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/feedback/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "feedback", "1"]
+            },
+            "description": "Видалити відгук"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE feedback (not found)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/feedback/9999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "v1", "feedback", "9999"]
+            },
+            "description": "Тест помилки - відгук не існує"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,753 @@
+{% extends "base.html" %}
+
+{% block title %}API Демонстрація{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-purple-100 to-red-100 py-8">
+    <div class="container mx-auto px-4">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">🚀 Демонстрація API</h1>
+            <p class="text-lg text-gray-600">Тестування всіх ендпоінтів вашого API</p>
+        </div>
+
+        <!-- Контейнер вкладок -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <!-- Вкладки навігації -->
+            <div class="flex flex-wrap border-b bg-gray-50">
+                <button class="tab-btn flex-1 py-4 px-6 text-center font-semibold hover:bg-gray-100 transition active-tab bg-purple-500 text-white" data-tab="products">
+                    📦 Продукти
+                </button>
+                <button class="tab-btn flex-1 py-4 px-6 text-center font-semibold hover:bg-gray-100 transition" data-tab="orders">
+                    📋 Замовлення
+                </button>
+                <button class="tab-btn flex-1 py-4 px-6 text-center font-semibold hover:bg-gray-100 transition" data-tab="feedback">
+                    💬 Відгуки
+                </button>
+            </div>
+
+            <!-- Повідомлення про стан -->
+            <div id="message" class="hidden fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 animate-fade-in max-w-md">
+                <span id="messageText"></span>
+            </div>
+
+            <!-- Завантаження -->
+            <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+                <div class="bg-white rounded-lg p-8 text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+                    <p class="mt-4 text-gray-700 font-semibold">Завантаження...</p>
+                </div>
+            </div>
+
+            <!-- ===== ВКЛАДКА: ПРОДУКТИ ===== -->
+            <div id="products-tab" class="tab-content p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">📦 Управління Продуктами</h2>
+
+                <!-- Форма додавання продукту -->
+                <div class="bg-gradient-to-r from-purple-50 to-red-50 rounded-lg p-6 mb-8 border-l-4 border-purple-500">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Додати новий продукт</h3>
+                    <form id="productForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Назва продукту *</label>
+                                <input type="text" id="productName" placeholder="Наприклад: Ноутбук" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Ціна (грн) *</label>
+                                <input type="number" id="productPrice" placeholder="1999.99" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">URL зображення</label>
+                                <input type="text" id="productImage" placeholder="https://example.com/image.jpg" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-red-500 text-white font-bold py-3 rounded-lg hover:shadow-lg transition duration-300">
+                            ✅ Додати Продукт
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Список продуктів -->
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Список всіх продуктів</h3>
+                    <button onclick="loadProducts()" class="mb-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                        🔄 Оновити список
+                    </button>
+                    <div id="productsList" class="space-y-4">
+                        <div class="text-center text-gray-500">Завантаження продуктів...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ВКЛАДКА: ЗАМОВЛЕННЯ ===== -->
+            <div id="orders-tab" class="tab-content hidden p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">📋 Управління Замовленнями</h2>
+
+                <!-- Форма додавання замовлення -->
+                <div class="bg-gradient-to-r from-purple-50 to-red-50 rounded-lg p-6 mb-8 border-l-4 border-purple-500">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Створити замовлення</h3>
+                    <form id="orderForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                                <input type="email" id="orderEmail" placeholder="user@example.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Телефон *</label>
+                                <input type="tel" id="orderPhone" placeholder="+38 (0XX) XXX-XX-XX" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Адреса доставки *</label>
+                                <input type="text" id="orderAddress" placeholder="вул. Шевченка, 1, м. Київ" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-red-500 text-white font-bold py-3 rounded-lg hover:shadow-lg transition duration-300">
+                            ✅ Створити Замовлення
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Пошук замовлень за email -->
+                <div class="bg-blue-50 rounded-lg p-6 mb-8 border-l-4 border-blue-500">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Пошук замовлень за email</h3>
+                    <div class="flex gap-2">
+                        <input type="email" id="searchEmail" placeholder="user@example.com" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="searchOrdersByEmail()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition font-semibold">
+                            🔍 Пошук
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Список замовлень -->
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Список всіх замовлень</h3>
+                    <button onclick="loadOrders()" class="mb-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                        🔄 Оновити список
+                    </button>
+                    <div id="ordersList" class="space-y-4">
+                        <div class="text-center text-gray-500">Завантаження замовлень...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ВКЛАДКА: ВІДГУКИ ===== -->
+            <div id="feedback-tab" class="tab-content hidden p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">💬 Управління Відгуками</h2>
+
+                <!-- Форма додавання відгуку -->
+                <div class="bg-gradient-to-r from-purple-50 to-red-50 rounded-lg p-6 mb-8 border-l-4 border-purple-500">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Залишити відгук</h3>
+                    <form id="feedbackForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Ім'я *</label>
+                            <input type="text" id="feedbackName" placeholder="Ваше ім'я" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                            <input type="email" id="feedbackEmail" placeholder="your@email.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Повідомлення *</label>
+                            <textarea id="feedbackMessage" placeholder="Ваш відгук..." rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-red-500 text-white font-bold py-3 rounded-lg hover:shadow-lg transition duration-300">
+                            ✅ Надіслати Відгук
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Список відгуків -->
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Всі відгуки</h3>
+                    <button onclick="loadFeedback()" class="mb-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                        🔄 Оновити список
+                    </button>
+                    <div id="feedbackList" class="space-y-4">
+                        <div class="text-center text-gray-500">Завантаження відгуків...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .tab-btn {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .tab-btn.active-tab {
+        background-color: #a855f7;
+        color: white;
+        border-b: 3px solid #7c3aed;
+    }
+
+    .tab-content {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .item {
+        background: linear-gradient(135deg, #f3e7e9 0%, #f5f7fa 100%);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border-left: 4px solid #a855f7;
+        transition: all 0.3s ease;
+    }
+
+    .item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #9ca3af;
+        font-size: 1.125rem;
+    }
+
+    #message {
+        transition: all 0.3s ease;
+    }
+
+    #message.success {
+        background-color: #10b981;
+        color: white;
+    }
+
+    #message.error {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    #message.info {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    #message.show {
+        display: block;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+</style>
+
+<script>
+    // ============================================
+    // НАЛАШТУВАННЯ - API ENDPOINTS
+    // ============================================
+
+    const API_ENDPOINTS = {
+        products: 'http://localhost:5000/api/v1/products',
+        orders: 'http://localhost:5000/api/v1/orders',
+        ordersByEmail: 'http://localhost:5000/api/v1/orders/search',
+        feedback: 'http://localhost:5000/api/v1/feedback'
+    };
+
+    // ============================================
+    // ДОПОМІЖНІ ФУНКЦІЇ
+    // ============================================
+
+    function showLoading(show) {
+        const loading = document.getElementById('loading');
+        loading.style.display = show ? 'flex' : 'none';
+    }
+
+    function showMessage(text, type = 'info') {
+        const messageBox = document.getElementById('message');
+        const messageText = document.getElementById('messageText');
+        
+        messageText.textContent = text;
+        messageBox.className = type + ' show';
+        messageBox.style.display = 'block';
+        
+        setTimeout(() => {
+            messageBox.style.display = 'none';
+            messageBox.className = '';
+        }, 5000);
+    }
+
+    // ============================================
+    // УПРАВЛІННЯ ВКЛАДКАМИ
+    // ============================================
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.getAttribute('data-tab');
+
+            // Приховуємо всі вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // Видаляємо активний клас з усіх кнопок
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active-tab');
+                b.style.backgroundColor = '';
+                b.style.color = '';
+            });
+
+            // Активуємо вибрану вкладку
+            const activeTab = document.getElementById(tabName + '-tab');
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+            }
+
+            btn.classList.add('active-tab');
+            btn.style.backgroundColor = '#a855f7';
+            btn.style.color = 'white';
+
+            // Завантажуємо дані при відкритті вкладки
+            if (tabName === 'products') {
+                loadProducts();
+            } else if (tabName === 'orders') {
+                loadOrders();
+            } else if (tabName === 'feedback') {
+                loadFeedback();
+            }
+        });
+    });
+
+    // ============================================
+    // РОБОТА З ПРОДУКТАМИ
+    // ============================================
+
+    async function loadProducts() {
+        try {
+            showLoading(true);
+            const response = await fetch(API_ENDPOINTS.products);
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayProducts(data.data || data.products || data);
+
+        } catch (error) {
+            showMessage('❌ Помилка завантаження продуктів: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function displayProducts(items) {
+        const container = document.getElementById('productsList');
+        container.innerHTML = '';
+
+        if (!items || items.length === 0) {
+            container.innerHTML = `<div class="empty-state">📭 Продуктів поки немає. Додайте перший продукт!</div>`;
+            return;
+        }
+
+        items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+
+            const imageHtml = item.image ? `<img src="${item.image}" alt="${item.name}" class="h-24 w-24 object-cover rounded mb-2">` : '';
+
+            itemDiv.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        ${imageHtml}
+                        <h4 class="text-lg font-bold text-gray-800">${item.name || 'Без назви'}</h4>
+                        <p class="text-purple-600 font-bold text-lg mt-2">💰 ${item.price || 0} грн</p>
+                    </div>
+                    <button onclick="deleteProduct(${item.id})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                        🗑️ Видалити
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(itemDiv);
+        });
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('productName').value.trim();
+        const price = parseFloat(document.getElementById('productPrice').value);
+        const image = document.getElementById('productImage').value.trim();
+
+        if (!name || name.length < 2) {
+            showMessage('❌ Назва продукту повинна містити мінімум 2 символи', 'error');
+            return;
+        }
+
+        if (!price || price <= 0) {
+            showMessage('❌ Ціна повинна бути більшою за 0', 'error');
+            return;
+        }
+
+        try {
+            showLoading(true);
+
+            const response = await fetch(API_ENDPOINTS.products, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, price, image })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            showMessage('✅ Продукт успішно додано!', 'success');
+            await loadProducts();
+            event.target.reset();
+
+        } catch (error) {
+            showMessage('❌ Помилка додавання продукту: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    async function deleteProduct(productId) {
+        if (!confirm('Ви впевнені, що хочете видалити цей продукт?')) {
+            return;
+        }
+
+        try {
+            showLoading(true);
+
+            const response = await fetch(`${API_ENDPOINTS.products}/${productId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            showMessage('✅ Продукт успішно видалено!', 'success');
+            await loadProducts();
+
+        } catch (error) {
+            showMessage('❌ Помилка видалення продукту: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // ============================================
+    // РОБОТА З ЗАМОВЛЕННЯМИ
+    // ============================================
+
+    async function loadOrders() {
+        try {
+            showLoading(true);
+            const response = await fetch(API_ENDPOINTS.orders);
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayOrders(data.data || data.orders || data);
+
+        } catch (error) {
+            showMessage('❌ Помилка завантаження замовлень: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function displayOrders(items) {
+        const container = document.getElementById('ordersList');
+        container.innerHTML = '';
+
+        if (!items || items.length === 0) {
+            container.innerHTML = `<div class="empty-state">📭 Замовлень поки немає. Створіть перше замовлення!</div>`;
+            return;
+        }
+
+        items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+
+            const statusColor = item.status === 'completed' ? 'green' : 'yellow';
+
+            itemDiv.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-gray-800">Замовлення #${item.id}</h4>
+                        <p class="text-gray-600 mt-2"><strong>Email:</strong> ${item.email || 'N/A'}</p>
+                        <p class="text-gray-600"><strong>Адреса:</strong> ${item.address || 'N/A'}</p>
+                        <p class="text-gray-600"><strong>Телефон:</strong> ${item.phone || 'N/A'}</p>
+                        <p class="text-gray-600"><strong>Сума:</strong> ${item.total_price || 0} грн</p>
+                        <p class="text-${statusColor}-600 font-bold mt-2"><strong>Статус:</strong> ${item.status || 'pending'}</p>
+                    </div>
+                    <button onclick="deleteOrder(${item.id})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                        🗑️ Видалити
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(itemDiv);
+        });
+    }
+
+    async function searchOrdersByEmail() {
+        const email = document.getElementById('searchEmail').value.trim();
+
+        if (!email) {
+            showMessage('❌ Введіть email для пошуку', 'error');
+            return;
+        }
+
+        try {
+            showLoading(true);
+            const response = await fetch(`${API_ENDPOINTS.ordersByEmail}?email=${encodeURIComponent(email)}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const orders = data.data || data.orders || data;
+            displayOrders(orders);
+            showMessage(`✅ Знайдено ${orders.length} замовлень`, 'success');
+
+        } catch (error) {
+            showMessage('❌ Помилка пошуку: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById('orderEmail').value.trim();
+        const phone = document.getElementById('orderPhone').value.trim();
+        const address = document.getElementById('orderAddress').value.trim();
+
+        if (!email || !phone || !address) {
+            showMessage('❌ Заповніть всі обов\'язкові поля', 'error');
+            return;
+        }
+
+        try {
+            showLoading(true);
+
+            const response = await fetch(API_ENDPOINTS.orders, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, phone, address, cart: {} })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Помилка з сервера:', errorData);
+                throw new Error(errorData.error || `HTTP помилка! Статус: ${response.status}`);
+            }
+
+            showMessage('✅ Замовлення успішно створено!', 'success');
+            await loadOrders();
+            event.target.reset();
+
+        } catch (error) {
+            showMessage('❌ Помилка створення замовлення: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    async function deleteOrder(orderId) {
+        if (!confirm('Ви впевнені, що хочете видалити це замовлення?')) {
+            return;
+        }
+
+        try {
+            showLoading(true);
+
+            const response = await fetch(`${API_ENDPOINTS.orders}/${orderId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            showMessage('✅ Замовлення успішно видалено!', 'success');
+            await loadOrders();
+
+        } catch (error) {
+            showMessage('❌ Помилка видалення замовлення: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // ============================================
+    // РОБОТА З ВІДГУКАМИ
+    // ============================================
+
+    async function loadFeedback() {
+        try {
+            showLoading(true);
+            const response = await fetch(API_ENDPOINTS.feedback);
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayFeedback(data.data || data.feedback || data);
+
+        } catch (error) {
+            showMessage('❌ Помилка завантаження відгуків: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function displayFeedback(items) {
+        const container = document.getElementById('feedbackList');
+        container.innerHTML = '';
+
+        if (!items || items.length === 0) {
+            container.innerHTML = `<div class="empty-state">📭 Відгуків поки немає. Залиште перший відгук!</div>`;
+            return;
+        }
+
+        items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+
+            itemDiv.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-gray-800">${item.name || 'Анонім'}</h4>
+                        <p class="text-gray-600 text-sm mt-1">📧 ${item.email || 'N/A'}</p>
+                        <p class="text-gray-700 mt-3">"${item.message || 'Немає текступовідомлення'}"</p>
+                    </div>
+                    <button onclick="deleteFeedback(${item.id})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                        🗑️ Видалити
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(itemDiv);
+        });
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('feedbackName').value.trim();
+        const email = document.getElementById('feedbackEmail').value.trim();
+        const message = document.getElementById('feedbackMessage').value.trim();
+
+        if (!name || name.length < 2) {
+            showMessage('❌ Ім\'я повинно містити мінімум 2 символи', 'error');
+            return;
+        }
+
+        if (!email) {
+            showMessage('❌ Email обов\'язковий', 'error');
+            return;
+        }
+
+        if (!message || message.length < 5) {
+            showMessage('❌ Повідомлення повинно містити мінімум 5 символів', 'error');
+            return;
+        }
+
+        try {
+            showLoading(true);
+
+            const response = await fetch(API_ENDPOINTS.feedback, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, message })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Помилка з сервера:', errorData);
+                throw new Error(errorData.error || `HTTP помилка! Статус: ${response.status}`);
+            }
+
+            showMessage('✅ Відгук успішно надіслано!', 'success');
+            await loadFeedback();
+            event.target.reset();
+
+        } catch (error) {
+            showMessage('❌ Помилка надіслання відгуку: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    async function deleteFeedback(feedbackId) {
+        if (!confirm('Ви впевнені, що хочете видалити цей відгук?')) {
+            return;
+        }
+
+        try {
+            showLoading(true);
+
+            const response = await fetch(`${API_ENDPOINTS.feedback}/${feedbackId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP помилка! Статус: ${response.status}`);
+            }
+
+            showMessage('✅ Відгук успішно видалено!', 'success');
+            await loadFeedback();
+
+        } catch (error) {
+            showMessage('❌ Помилка видалення відгуку: ' + error.message, 'error');
+            console.error('Помилка:', error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // ============================================
+    // ІНІЦІАЛІЗАЦІЯ
+    // ============================================
+
+    window.addEventListener('load', () => {
+        loadProducts();
+    });
+</script>
+{% endblock %}

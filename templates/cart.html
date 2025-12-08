@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Кошик{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Кошик</h1>
+{% if cart %}
+    <table class="w-full mb-4">
+        <thead>
+            <tr>
+                <th class="text-left">Товар</th>
+                <th class="text-left">Ціна</th>
+                <th class="text-left">Кількість</th>
+                <th class="text-left">Всього</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart.values() %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.price }} грн</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price * item.quantity }} грн</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="text-xl font-bold mb-4">Загальна вартість: {{ total }} грн</p>
+    <form action="{{ url_for('shop.checkout') }}" method="post">
+        <div class="mb-4">
+            <label for="email" class="block mb-2">Email:</label>
+            <input type="email" id="email" name="email" required class="w-full p-2 border rounded">
+        </div>
+            <div class="mb-4">
+                <label for="phone" class="block mb-2">Телефон:</label>
+                <input type="text" id="phone" name="phone" required class="w-full p-2 border rounded">
+            </div>
+        <div class="mb-4">
+            <label for="address" class="block mb-2">Адреса доставки:</label>
+            <textarea id="address" name="address" required class="w-full p-2 border rounded"></textarea>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Оплатити замовлення</button>
+    </form>
+{% else %}
+    <p>Ваш кошик порожній.</p>
+{% endif %}
+{% endblock %}
