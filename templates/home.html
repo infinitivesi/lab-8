@@ -15,6 +15,12 @@
     </div>
 </section>
 
+<!-- Search results (appears right below search bar) -->
+<section id="searchResults" class="mb-8 hidden">
+    <h2 class="text-2xl font-bold mb-3">Результати пошуку</h2>
+    <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</section>
+
 <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <!-- Featured products -->
     <div class="col-span-2 bg-white p-4 rounded-lg shadow">
@@ -49,18 +55,14 @@
     </aside>
 </section>
 
-<!-- Search results -->
-<section id="searchResults" class="mb-8 hidden">
-    <h2 class="text-2xl font-bold mb-3">Результати пошуку</h2>
-    <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-</section>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const API = {
         products: '/api/v1/products',
         feedback: '/api/v1/feedback',
     };
+    // Add-to-cart URL template: use a known placeholder (0) and replace its trailing 0 with the real product id in JS
+    const ADD_TO_CART_URL = "{{ url_for('shop.add_to_cart', product_id=0) }}";
 
     const featuredEl = document.getElementById('featured');
     const latestFeedbackEl = document.getElementById('latestFeedback');
@@ -74,7 +76,14 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const r = await fetch(API.products);
             const json = await r.json();
-            const items = (json.data && Array.isArray(json.data)) ? json.data.slice(0,6) : [];
+            // Copy and shuffle products so featured items change on each page load
+            let items = (json.data && Array.isArray(json.data)) ? json.data.slice() : [];
+            // Fisher-Yates shuffle
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+            items = items.slice(0, 6);
             if (!items.length) {
                 featuredEl.innerHTML = '<div class="col-span-full text-gray-500">Товари відсутні</div>';
                 return;
@@ -82,11 +91,12 @@ document.addEventListener('DOMContentLoaded', function() {
             featuredEl.innerHTML = '';
             items.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'bg-gray-50 p-3 rounded border';
+                card.className = 'bg-gray-50 p-3 rounded border relative group';
                 card.innerHTML = `
                     <img src="${item.image || 'https://picsum.photos/seed/'+item.id+'/400/250'}" alt="${item.name}" class="w-full h-40 object-cover rounded mb-2">
                     <h4 class="font-semibold">${item.name}</h4>
                     <p class="text-sm text-gray-600">${item.price ? item.price + ' грн' : 'ціна не вказана'}</p>
+                    <a href="${ADD_TO_CART_URL.replace(/0$/, item.id)}" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">Купити</a>
                 `;
                 featuredEl.appendChild(card);
             });
@@ -133,11 +143,12 @@ document.addEventListener('DOMContentLoaded', function() {
             resultsGrid.innerHTML = '';
             items.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'bg-white p-3 rounded shadow';
+                card.className = 'bg-white p-3 rounded shadow relative group';
                 card.innerHTML = `
                     <img src="${item.image || 'https://picsum.photos/seed/'+item.id+'/400/250'}" alt="${item.name}" class="w-full h-36 object-cover rounded mb-2">
                     <h4 class="font-semibold">${item.name}</h4>
                     <p class="text-sm text-gray-600">${item.price ? item.price + ' грн' : 'ціна не вказана'}</p>
+                    <a href="${ADD_TO_CART_URL.replace(/0$/, item.id)}" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">Купити</a>
                 `;
                 resultsGrid.appendChild(card);
             });

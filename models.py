@@ -18,6 +18,11 @@ def init_db():
     except Exception:
         pass
     conn.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, price REAL, image TEXT)')
+    # Add description column to products if it doesn't exist
+    try:
+        conn.execute("ALTER TABLE products ADD COLUMN description TEXT DEFAULT ''")
+    except Exception:
+        pass
     conn.execute('CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, address TEXT, total_price REAL, status TEXT, date TEXT)')
     # Ensure orders table has phone column for contact updates
     try:
@@ -81,19 +86,19 @@ def get_product(product_id):
     return product
 
 
-def add_product(name, price, image=''):
+def add_product(name, price, image='', description=''):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('INSERT INTO products (name, price, image) VALUES (?, ?, ?)',
-                (name, price, image))
+    cur.execute('INSERT INTO products (name, price, image, description) VALUES (?, ?, ?, ?)',
+                (name, price, image, description))
     conn.commit()
     conn.close()
 
 
-def update_product(product_id, name, price, image=''):
+def update_product(product_id, name, price, image='', description=''):
     conn = get_db_connection()
-    conn.execute('UPDATE products SET name = ?, price = ?, image = ? WHERE id = ?',
-                 (name, price, image, product_id))
+    conn.execute('UPDATE products SET name = ?, price = ?, image = ?, description = ? WHERE id = ?',
+                 (name, price, image, description, product_id))
     conn.commit()
     conn.close()
 

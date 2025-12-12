@@ -1,4 +1,4 @@
-**Docker / Docker Compose**
+v**Docker / Docker Compose**
 
 This project includes basic containerization for the Flask app.
 
@@ -80,7 +80,46 @@ If you want, I can add:
 - an entrypoint script that runs DB initialization/seed on first start,
 - or a `Makefile` / PowerShell helper for common Docker commands.
 
-Architecture
+Мови проєкту
+------------
+
+Короткі деталі про основні мови та технології, що застосовуються в цьому репозиторії:
+
+- **Python (Flask)**
+	- Роль: серверна логіка, маршрути, API, робота з БД.
+	- Ключові файли/папки: `app.py`, `models.py`, `init_db.py`, `seed_data.py`, `routes/`, `tests/`.
+	- Рекомендації: використовувати Python 3.10–3.12, фіксувати залежності у `requirements.txt`/`requirements-dev.txt`, запускати тести через `pytest`.
+
+- **HTML / Jinja2 (шаблони)**
+	- Роль: генерація сторінок на сервері, шаблони знаходяться в `templates/`.
+	- Порада: великі або повторювані скрипти винести у `static/`.
+
+- **Tailwind CSS / CSS**
+	- Роль: стилі інтерфейсу (утилітарні класи у шаблонах). Може підключатися через CDN або локальну збірку.
+	- Порада: для кастомізації і оптимізації у продакшн розгляньте локальну збірку Tailwind з purge/optimize кроком.
+
+- **JavaScript**
+	- Роль: клієнтська логіка (пошук, динаміка карток, AJAX). Часто скрипти розміщені прямо в шаблонах (`templates/home.html`, `templates/shop.html`).
+	- Порада: для підтримки та продуктивності винесіть в `static/js/` і мінімізуйте файли у продакшн.
+
+- **SQL / SQLite**
+	- Роль: зберігання даних у локальному файлі БД (шлях визначається `DB_PATH`).
+	- Примітка: SQLite чудово підходить для локального розвитку та невеликих проєктів; для масштабування розгляньте PostgreSQL або MySQL.
+
+- **Shell / PowerShell / Batch**
+	- Роль: скрипти запуску та бекапу (e.g., `run-dev.ps1`, `run-dev.bat`, `scripts/backup_db.sh`).
+
+- **Docker / YAML**
+	- Роль: контейнеризація та оркестрація (`Dockerfile`, `docker-compose.yml`, `docker-compose.prod.yml`).
+	- Порада: використовуємо multi-stage збірку, healthcheck та non-root `app` user.
+
+- **Nginx**
+	- Роль: конфігурація реверс-проксі у продакшн (`nginx/nginx.conf`).
+
+- **JSON / Інші формати**
+	- Роль: `Postman_Collection.json` для тестування API, Markdown для документації (`DOCKER.md`, `TESTING.md`).
+
+Архітектура
 ----------
 
 - `web` service: the Flask application container. Runs as non-root `app` user, serves HTTP on port 5000 inside the bridge network.

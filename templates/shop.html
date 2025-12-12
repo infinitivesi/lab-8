@@ -31,11 +31,22 @@
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {% for product in products %}
-    <div class="bg-white p-4 shadow-md rounded-lg relative group">
-        <img src="{{ product.image if product.image else 'https://picsum.photos/400/300' }}" alt="{{ product.name }}" class="w-full h-48 object-cover mb-2" />
-        <h2 class="text-xl font-semibold">{{ product.name }}</h2>
-        <p class="text-gray-600">{{ product.price }} грн</p>
-        <a href="{{ url_for('shop.add_to_cart', product_id=product.id) }}" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">Купити</a>
+    <div class="bg-white p-0 shadow-md rounded-lg relative overflow-hidden group transform transition-transform duration-200 hover:scale-[1.02]">
+        <div class="relative">
+            <img src="{{ product.image if product.image else 'https://picsum.photos/600/400?random=' ~ product.id }}" alt="{{ product.name }}" class="w-full h-48 object-cover" />
+            <div class="absolute top-3 right-3 bg-purple-600 text-white text-sm font-semibold px-3 py-1 rounded">{{ '%.2f'|format(product.price) }} грн</div>
+        </div>
+        <div class="p-4">
+            <h2 class="text-lg font-semibold leading-tight text-gray-800 truncate">{{ product.name }}</h2>
+            <div class="mt-2 flex items-center justify-between">
+                <div class="text-sm text-gray-500">Артикул: #{{ product.id }}</div>
+                <div class="text-sm text-gray-700 font-medium">{{ '%.2f'|format(product.price) }} грн</div>
+            </div>
+            <div class="mt-4 flex space-x-2">
+                <a href="{{ url_for('shop.add_to_cart', product_id=product.id) }}" class="flex-1 text-center px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700">Додати в кошик</a>
+                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="px-3 py-2 border rounded text-sm text-gray-700 bg-white">Деталі</a>
+            </div>
+        </div>
     </div>
     {% else %}
     <div class="col-span-full text-center text-gray-600">Товарів не знайдено за вашим запитом.</div>

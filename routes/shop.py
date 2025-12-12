@@ -108,3 +108,13 @@ def update_order_contact(order_id):
     update_order_contact(order_id, address, phone)
     flash('Контактні дані оновлено', 'info')
     return redirect(url_for('shop.order_history_details', order_id=order_id))
+
+
+@shop_bp.route('/product/<int:product_id>')
+def product_detail(product_id):
+    from models import get_product
+    product = get_product(product_id)
+    if not product:
+        flash('Товар не знайдено', 'error')
+        return redirect(url_for('shop.shop'))
+    return render_template('product_detail.html', product=product)

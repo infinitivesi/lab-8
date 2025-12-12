@@ -107,6 +107,33 @@ def get_all_products():
     except Exception as e:
         return error_response(f'Error retrieving products: {str(e)}', 'PRODUCT_RETRIEVAL_ERROR', 500)
 
+
+@api_bp.route('/products/<int:product_id>', methods=['GET'])
+def get_single_product(product_id):
+    """
+    Отримати один продукт за ID
+    ---
+    tags:
+      - Products
+    parameters:
+      - name: product_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Продукт
+      404:
+        description: Продукт не знайдено
+    """
+    try:
+        product = get_product(product_id)
+        if not product:
+            return error_response('Product not found', 'PRODUCT_NOT_FOUND', 404)
+        return success_response(dict(product))
+    except Exception as e:
+        return error_response(f'Error retrieving product: {str(e)}', 'PRODUCT_RETRIEVAL_ERROR', 500)
+
 @api_bp.route('/products', methods=['POST'])
 @require_json('name', 'price')
 def create_product():
@@ -147,10 +174,11 @@ def create_product():
         name = data.get('name')
         price = float(data.get('price'))
         image = data.get('image', '')
-        
-        add_product(name, price, image)
-        return success_response({'name': name, 'price': price, 'image': image}, 
-                              message='Product created successfully', status_code=201)
+        description = data.get('description', '')
+
+        add_product(name, price, image, description)
+        return success_response({'name': name, 'price': price, 'image': image, 'description': description}, 
+                  message='Product created successfully', status_code=201)
     except ValueError:
         return error_response('Price must be a valid number', 'INVALID_PRICE', 400)
     except Exception as e:
@@ -201,10 +229,11 @@ def update_prod(product_id):
         name = data.get('name')
         price = float(data.get('price'))
         image = data.get('image', '')
-        
-        update_product(product_id, name, price, image)
-        return success_response({'id': product_id, 'name': name, 'price': price, 'image': image},
-                              message='Product updated successfully')
+        description = data.get('description', '')
+
+        update_product(product_id, name, price, image, description)
+        return success_response({'id': product_id, 'name': name, 'price': price, 'image': image, 'description': description},
+                  message='Product updated successfully')
     except ValueError:
         return error_response('Price must be a valid number', 'INVALID_PRICE', 400)
     except Exception as e:

@@ -61,6 +61,11 @@
                                 <input type="text" id="productImage" placeholder="https://example.com/image.jpg" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                             </div>
                         </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Опис</label>
+                            <textarea id="productDescription" placeholder="Короткий опис товару" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                        </div>
+                        </div>
                         <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-red-500 text-white font-bold py-3 rounded-lg hover:shadow-lg transition duration-300">
                             ✅ Додати Продукт
                         </button>
@@ -368,14 +373,16 @@
 
             itemDiv.innerHTML = `
                 <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        ${imageHtml}
-                        <h4 class="text-lg font-bold text-gray-800">${item.name || 'Без назви'}</h4>
-                        <p class="text-purple-600 font-bold text-lg mt-2">💰 ${item.price || 0} грн</p>
+                        <div class="flex-1">
+                            ${imageHtml}
+                            <h4 class="text-lg font-bold text-gray-800">${item.name || 'Без назви'}</h4>
+                            <p class="text-gray-700 mt-2">${item.description ? (item.description.length > 120 ? escapeHtml(item.description).substring(0,120) + '...' : escapeHtml(item.description)) : '<span class="text-gray-400">Опис відсутній</span>'}</p>
+                            <p class="text-purple-600 font-bold text-lg mt-2">💰 ${item.price || 0} грн</p>
+                        </div>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="startEditProduct(${item.id}, this)" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">✏️ Редагувати</button>
+                        <button onclick="deleteProduct(${item.id})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">🗑️ Видалити</button>
                     </div>
-                    <button onclick="deleteProduct(${item.id})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
-                        🗑️ Видалити
-                    </button>
                 </div>
             `;
 
@@ -389,6 +396,7 @@
         const name = document.getElementById('productName').value.trim();
         const price = parseFloat(document.getElementById('productPrice').value);
         const image = document.getElementById('productImage').value.trim();
+        const description = document.getElementById('productDescription').value.trim();
 
         if (!name || name.length < 2) {
             showMessage('❌ Назва продукту повинна містити мінімум 2 символи', 'error');
@@ -408,7 +416,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, price, image })
+                body: JSON.stringify({ name, price, image, description })
             });
 
             if (!response.ok) {
@@ -452,6 +460,105 @@
         } finally {
             showLoading(false);
         }
+    }
+
+    // ===== РЕДАГУВАННЯ ПРОДУКТУ (Inline) =====
+    // Start editing: replace item container with an edit form
+    function startEditProduct(productId, btnEl) {
+        // find the parent .item element
+        const itemEl = btnEl.closest('.item');
+        if (!itemEl) return;
+
+        // fetch current product data (we already have it in the list but fetch fresh)
+        showLoading(true);
+        fetch(`${API_ENDPOINTS.products}/${productId}`)
+            .then(r => {
+                if (!r.ok) throw new Error('Не вдалося отримати дані продукту');
+                return r.json();
+            })
+            .then(data => {
+                const p = data.data || data;
+                // create edit form
+                itemEl.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="md:col-span-1">
+                            <img src="${p.image || 'https://picsum.photos/200/200?random=' + productId}" class="w-full h-40 object-cover rounded" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" class="edit-name flex-1 px-3 py-2 border rounded" value="${escapeHtml(p.name || '')}" placeholder="Назва">
+                                <input type="number" step="0.01" class="edit-price w-40 px-3 py-2 border rounded" value="${p.price || 0}">
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="edit-image w-full px-3 py-2 border rounded" value="${escapeHtml(p.image || '')}" placeholder="URL зображення">
+                            </div>
+                            <div class="mb-2">
+                                <label class="block text-sm text-gray-600 mb-1">Опис</label>
+                                <textarea class="edit-description w-full px-3 py-2 border rounded" rows="3" placeholder="Опис">${escapeHtml(p.description || '')}</textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="bg-green-600 text-white px-4 py-2 rounded" onclick="submitEditProduct(${productId}, this)">💾 Зберегти</button>
+                                <button class="bg-gray-300 px-4 py-2 rounded" onclick="cancelEdit(this)">Відмінити</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(err => {
+                showMessage('❌ ' + err.message, 'error');
+                console.error(err);
+            })
+            .finally(() => showLoading(false));
+    }
+
+    function cancelEdit(btnEl) {
+        // reload products to restore the original item view
+        loadProducts();
+    }
+
+    async function submitEditProduct(productId, btnEl) {
+        const container = btnEl.closest('.item');
+        if (!container) return;
+        const name = container.querySelector('.edit-name').value.trim();
+        const price = parseFloat(container.querySelector('.edit-price').value);
+        const image = container.querySelector('.edit-image').value.trim();
+        const descriptionEl = container.querySelector('.edit-description');
+        const description = descriptionEl ? descriptionEl.value.trim() : '';
+
+        if (!name || name.length < 2) { showMessage('❌ Назва має бути мінімум 2 символи', 'error'); return; }
+        if (isNaN(price) || price <= 0) { showMessage('❌ Ціна має бути більше 0', 'error'); return; }
+
+        try {
+            showLoading(true);
+            const response = await fetch(`${API_ENDPOINTS.products}/${productId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price, image, description })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP ${response.status}`);
+            }
+
+            showMessage('✅ Продукт успішно оновлено', 'success');
+            await loadProducts();
+        } catch (err) {
+            showMessage('❌ Помилка оновлення: ' + err.message, 'error');
+            console.error(err);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // small helper to avoid XSS when inserting user strings into template literals
+    function escapeHtml(unsafe) {
+        return String(unsafe)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     // ============================================
